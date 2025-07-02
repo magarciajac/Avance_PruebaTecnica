@@ -1,0 +1,19 @@
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "TuP@ssw0rd!"
+    ports:
+      - "1433:1433"
+
+  api:
+    build: .
+    depends_on:
+      - db
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Production"
+      ASPNETCORE_URLS: "http://+:80"
+      ConnectionStrings__DefaultConnection: "Server=db,1433;Database=SentimentDb;User Id=sa;Password=TuP@ssw0rd!;Encrypt=false;TrustServerCertificate=true;"
+    ports:
+      - "5196:80"

@@ -1,0 +1,17 @@
+### Build artifacts ###
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+### VS Code ###
+.vscode/
+
+### macOS ###
+.DS_Store
+
+### Docker ###
+docker-compose.override.yml
+*.log
