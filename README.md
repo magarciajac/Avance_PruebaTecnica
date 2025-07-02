@@ -23,7 +23,7 @@ docker compose down
 # 1) Construir imagen y levantar API + SQL Server
 docker compose up --build
 
-NOTA: la primera vez puede fallar por la Base de Datos favor de ir al  # 6)
+NOTA: la primera vez puede fallar por la Base de Datos favor de ir al  # 5)
 
 
 # 2) Explorar la API con Swagger
