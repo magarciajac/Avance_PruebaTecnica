@@ -1,60 +1,86 @@
-# Sentiment API – Avance Prueba Técnica
+# Sentiment API – Prueba Técnica
 
-Pequeña API construida con **ASP.NET Core 8.0** que clasifica comentarios como *Positive*, *Negative* o *Neutral* y los guarda en **SQL Server** ejecutado en contenedor Docker.
+Servicio REST en **ASP.NET Core 8.0** que clasifica comentarios (positivo / negativo / neutral) y los guarda en **SQL Server**.  
+Todo corre dentro de contenedores Docker (API + BD) y se gestiona con **Docker Compose**.
 
 ---
 
-## 1. Ejecutar todo con Docker Compose
+## 1 · Requisitos
+
+| Herramienta        | Versión recomendada |
+|--------------------|---------------------|
+| Docker Desktop     | ≥ 24.x (incluye Compose) |
+| .NET SDK (opcional)| ≥ 8.0 *(solo para ejecutar tests o compilar fuera de Docker)* |
+
+---
+
+## 2 · Arranque rápido
 
 ```bash
+# 0) Por si hubiese contenedores viejos
+docker compose down
+
+# 1) Construir imagen y levantar API + SQL Server
 docker compose up --build
-```
 
-* `--build` fuerza la compilación de la imagen de la API.  
-* **docker‑compose.yml** levanta **dos servicios** al mismo tiempo:  
-  1. **`sentiment-api`** – la aplicación ASP.NET Core.  
-  2. **`sqlserver`** – SQL Server 2022 con volumen persistente.
+NOTA: la primera vez puede fallar por la Base de Datos favor de ir al  # 6)
 
-Cuando el comando termina de levantar los contenedores:
 
-* La API está escuchando en **http://localhost:5196** (puerto mapeado 5196→80).  
-* La base de datos está disponible en **localhost:1433** con las credenciales definidas en el compose file.
+# 2) Explorar la API con Swagger
 
----
+http://localhost:5196/swagger/index.html
 
-## 2. Endpoints principales
+Swagger UI actúa como Postman: puedes invocar los métodos, ver modelos y probar
+la clasificación de sentimientos.
 
-| Verbo | Ruta                             | Descripción                                           |
-|-------|----------------------------------|-------------------------------------------------------|
-| GET   | `/comments`                      | Devuelve todos los comentarios ordenados por fecha    |
-| GET   | `/comments/{productId}`          | Devuelve comentarios filtrados por `ProductId`        |
-| POST  | `/comments`                      | Crea un comentario, lo clasifica y lo guarda          |
-| DELETE| `/comments/{id}`                 | Elimina un comentario por `Id`                        |
+# 3) Endpoints
 
-*(Estos endpoints están definidos en **Program.cs** para mantener el ejemplo sencillo sin controladores.)*
+POST
+/api/comments
+{
+  "id": 0,
+  "productId": "string",
+  "userId": "string",
+  "commentText": "string",
+  "sentiment": "string",
+  "createdAt": "2025-07-02T04:33:14.759Z"
+}
+Crea un comentario, clasifica su sentimiento y lo guarda.
 
----
+GET
+/api/comments
+http://localhost:5196/api/comments
+http://localhost:5196/api/comments?productId=productId
+Nota: neutral/negativo/positivo
+http://localhost:5196/api/comments?sentiment=neutral
 
-## 3. Probar la API con Swagger UI
+Lista comentarios (filtros opcionales productId y sentiment)
 
-Una vez que los contenedores estén arriba, abre tu navegador en:
+GET
+/api/comments/sentiment-summary
+http://localhost:5196/api/comments/sentiment-summary
 
-```
-http://localhost:5196/swagger
-```
+Totales y conteo por sentimiento
 
-Swagger UI permite invocar cada endpoint, ver los modelos de request/response y probar rápidamente la clasificación de sentimientos.
+DELETE
+/api/comments/{productId}
+http://localhost:5196/api/comments/string
 
----
+Extra: borra todos los comentarios de un mismo productId.
+Para usar DELETE, pasa el productId del comentario; si no hay resultados, devuelve 404.
 
-## 4. Ejecutar pruebas unitarias (opcional)
 
-Dentro de la carpeta **tests/** hay un proyecto `SentimentApi.Tests` con pruebas de `CommentService`. Ejecuta:
+# 4) Pruebas Unitarias
 
-```bash
-dotnet test
-```
+TIP Detén todos los contenedores (docker compose down) y luego, desde la raíz del repo:
 
----
+dotnet test tests/SentimentApi.Tests/SentimentApi.Tests.csproj
 
-¡Listo! Con esto tendrás la API y la base de datos corriendo, además de documentación interactiva para probarla.
+
+# 5) Posibles Errores
+
+Basta con correr de nuevo:
+
+docker compose down
+docker compose up --build
+
