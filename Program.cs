@@ -105,6 +105,25 @@ app.MapGet("/api/comments/sentiment-summary", async (CommentsDbContext db) =>
 .WithName("GetSentimentSummary")
 .WithOpenApi();
 
+// DELETE /api/comments/{productId}
+// Elimina todos los comentarios asociados a un productId.
+app.MapDelete("/api/comments/{productId}", async (CommentsDbContext db, string productId) =>
+{
+    var comments = await db.Comments
+                           .Where(c => c.ProductId == productId)
+                           .ToListAsync();
+
+    if (comments.Count == 0)
+        return Results.NotFound($"No se encontraron comentarios para el producto '{productId}'.");
+
+    db.Comments.RemoveRange(comments);
+    await db.SaveChangesAsync();
+
+    // 204 No Content: operación exitosa sin cuerpo de respuesta.
+    return Results.NoContent();
+})
+.WithName("DeleteCommentsByProduct")
+.WithOpenApi();
 
 
 app.Run();
